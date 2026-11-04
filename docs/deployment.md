@@ -20,7 +20,7 @@ Required values in `.env`:
 Generate the login password and configuration values with:
 
 ```sh
-docker run --rm ghcr.io/kingtiki/totally-test:latest node scripts/setup.mjs --stdout
+docker run --rm ghcr.io/kingtiki/totally:latest node scripts/setup.mjs --stdout
 ```
 
 The command prints configuration to stdout and the password to stderr; it does not
@@ -151,7 +151,7 @@ when a GitHub Release is published and verification succeeds. Pushes, PRs, draft
 and manual CI runs do not build or publish images.
 
 The image name is derived from the lowercase GitHub owner/repository, currently
-`ghcr.io/kingtiki/totally-test`. A release tagged `v1.2.3` publishes `:v1.2.3` and
+`ghcr.io/kingtiki/totally`. A release tagged `v1.2.3` publishes `:v1.2.3` and
 `:latest`. A prerelease such as `v1.3.0-rc.1` publishes only its exact tag.
 Every stable release updates `latest`, including older versions. Prefer a version
 tag or digest for pinned deployments. See the [release rules](../CONTRIBUTING.md#pull-requests-and-releases).

@@ -27,7 +27,7 @@ Docker mit Compose vorausgesetzt. Als [compose.yaml](compose.yaml) speichern:
 ```yaml
 services:
   app:
-    image: ghcr.io/kingtiki/totally-test:latest
+    image: ghcr.io/kingtiki/totally:latest
     restart: unless-stopped
     env_file: .env
     environment:
@@ -60,7 +60,7 @@ SESSION_SECRET=...
 Login-Passwort, zugehörigen `PASSWORD_HASH` und zufälligen `SESSION_SECRET` erzeugen:
 
 ```sh
-docker run --rm ghcr.io/kingtiki/totally-test:latest node scripts/setup.mjs --stdout
+docker run --rm ghcr.io/kingtiki/totally:latest node scripts/setup.mjs --stdout
 ```
 
 Den erzeugten Hash und das Secret in `.env` eintragen, das angezeigte Login-Passwort
