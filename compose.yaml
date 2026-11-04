@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/kingtiki/totally-test:latest
+    image: ghcr.io/kingtiki/totally:latest
     restart: unless-stopped
     env_file: .env
     environment:

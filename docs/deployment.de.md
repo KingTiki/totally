@@ -20,7 +20,7 @@ Notwendige Werte in `.env`:
 Login-Passwort und Konfigurationswerte erzeugen:
 
 ```sh
-docker run --rm ghcr.io/kingtiki/totally-test:latest node scripts/setup.mjs --stdout
+docker run --rm ghcr.io/kingtiki/totally:latest node scripts/setup.mjs --stdout
 ```
 
 Der Befehl gibt die Konfiguration auf stdout und das Passwort auf stderr aus; er
@@ -146,7 +146,7 @@ nur bei einem veröffentlichten GitHub-Release nach erfolgreicher Prüfung. Push
 PRs, Entwürfe und manuelle CI-Läufe bauen und veröffentlichen keine Images.
 
 Der Image-Name ergibt sich aus dem kleingeschriebenen GitHub-Owner/Repository,
-aktuell `ghcr.io/kingtiki/totally-test`. Ein Release mit Tag `v1.2.3` veröffentlicht
+aktuell `ghcr.io/kingtiki/totally`. Ein Release mit Tag `v1.2.3` veröffentlicht
 `:v1.2.3` und `:latest`. Eine Vorabversion wie `v1.3.0-rc.1` erhält nur ihren
 exakten Tag. Jedes reguläre Release verschiebt `latest`, auch ein älteres. Für feste
 Installationen Versions-Tags oder Digests verwenden. Siehe [Release-Regeln](../CONTRIBUTING.de.md#pull-requests-und-ci).
