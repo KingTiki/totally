@@ -1,0 +1,3 @@
+export const BACKUP_MAX_BYTES = 100 * 1024 * 1024;
+export const BACKUP_JSON_MAX_BYTES = 32 * 1024 * 1024;
+export const BACKUP_EXPANDED_MAX_BYTES = 128 * 1024 * 1024;

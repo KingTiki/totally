@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.release.id || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'release' }}
+
+jobs:
+  verify:
+    name: Typecheck, tests and build
+    runs-on: ubuntu-latest
+    container: node:24-bookworm
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.release.tag_name || github.ref }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run check
+      - name: Unit and integration tests
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium and system dependencies
+        run: npm exec -- playwright install --with-deps chromium
+      - name: Desktop and mobile browser tests
+        run: npm run test:e2e
+      - name: Upload browser test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: browser-test-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  image:
+    name: Build and publish Docker image
+    if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE_REPOSITORY: ${{ github.repository }}
+      SOURCE_REPOSITORY: ${{ github.server_url }}/${{ github.repository }}
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      PRERELEASE: ${{ github.event.release.prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.release.tag_name }}
+      - name: Set and validate image tags
+        shell: bash
+        run: |
+          # Release names are untrusted input. Require a valid, immutable-looking
+          # version tag and pass it through env, never directly into shell code.
+          if [[ ! "$RELEASE_TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9][A-Za-z0-9.-]*)?$ ]] || (( ${#RELEASE_TAG} > 128 )); then
+            echo 'Use a release tag such as v1.2.3 or v1.2.3-rc.1 (max. 128 characters).' >&2
+            exit 1
+          fi
+          if [[ "$PRERELEASE" != 'true' && "$RELEASE_TAG" == *-* ]]; then
+            echo 'Tags with a version suffix must be marked as a prerelease.' >&2
+            exit 1
+          fi
+          echo "IMAGE_NAME=ghcr.io/${IMAGE_REPOSITORY,,}" >> "$GITHUB_ENV"
+          echo "REVISION=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Build Docker image
+        run: |
+          docker build --tag "$IMAGE_NAME:$RELEASE_TAG" \
+            --label "org.opencontainers.image.source=$SOURCE_REPOSITORY" \
+            --label "org.opencontainers.image.revision=$REVISION" \
+            --label "org.opencontainers.image.version=$RELEASE_TAG" \
+            --label "org.opencontainers.image.licenses=MIT" .
+      - name: Log in to GitHub Container Registry
+        shell: bash
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GHCR_USER" --password-stdin
+      - name: Publish release tag
+        run: docker push "$IMAGE_NAME:$RELEASE_TAG"
+      - name: Publish latest for a stable release
+        if: ${{ !github.event.release.prerelease }}
+        run: |
+          docker tag "$IMAGE_NAME:$RELEASE_TAG" "$IMAGE_NAME:latest"
+          docker push "$IMAGE_NAME:latest"
+      - name: Log out of GitHub Container Registry
+        if: ${{ always() }}
+        run: docker logout ghcr.io

@@ -1,0 +1,9 @@
+node_modules
+.svelte-kit
+build
+.test-data
+test-results
+playwright-report
+package-lock.json
+data
+.env

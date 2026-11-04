@@ -1,0 +1,26 @@
+# Abhängigkeiten und Paketcache
+.npm-cache/
+node_modules/
+
+# Build-Ausgaben
+.svelte-kit/
+build/
+
+# Umgebungsvariablen
+.env
+.env.*
+!.env.example
+
+# Anwendungsdaten
+/totally-data
+/data
+
+# Testdaten und Berichte
+.test-data/
+playwright-report/
+test-results/
+
+# Lokale Dateien und Logs
+*.log
+/Designs
+pw

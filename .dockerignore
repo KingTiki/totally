@@ -1,0 +1,17 @@
+node_modules
+.svelte-kit
+build
+.git
+.github
+docs
+CONTRIBUTING.md
+.env
+.env.*
+data
+totally-data
+.test-data
+test-results
+playwright-report
+.npm-cache
+*.log
+pw

@@ -1,0 +1,22 @@
+services:
+  app:
+    image: ghcr.io/kingtiki/totally-test:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATA_DIR: /app/data
+      BODY_SIZE_LIMIT: '${BODY_SIZE_LIMIT:-110M}'
+    ports:
+      - '${BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-3000}:3000'
+    volumes:
+      - totally-data:/app/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 45s
+
+volumes:
+  totally-data:
